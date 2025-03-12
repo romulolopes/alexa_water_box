@@ -102,8 +102,14 @@ void setup() {
   wm.addParameter(&default_output_state);
 
   Serial.println("Criando wifi");
-  wm.autoConnect("Mandacaru");
+  wm.setTimeout(180); // 180 segundos (3 min) para conectar ao Wi-Fi
+  if (!wm.autoConnect("brisa-3085232")) {
+    Serial.println("Falha ao conectar Wi-Fi! Reiniciando...");
+    delay(3000);
+    ESP.restart();
+  }
 
+  
   strcpy(device_custom_name, custom_bot_id.getValue());
   
   if (shouldSaveConfig) {
@@ -162,7 +168,7 @@ void loop() {
   
     WiFi.disconnect();
     delay(500);
-    ESP.reset();
+    ESP.restart();
   }
 
   if (millis() - lastTime >= interval) {
