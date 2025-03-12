@@ -9,17 +9,26 @@
 #define SERIAL_BAUDRATE 115200
 #define BOT_TOKEN_LENGTH 30
 
-#define SENSOR_100  7                     
-#define SENSOR_75  6                     
-#define SENSOR_50  5                     
-#define SENSOR_25  4                     
-#define SENSOR_0  3                     
+#define SENSOR_100  D7  // GPIO13
+#define SENSOR_85   D6  // GPIO12
+#define SENSOR_71   D5  // GPIO14
+#define SENSOR_57   D4  // GPIO2
+#define SENSOR_42   D3  // GPIO0
+#define SENSOR_28   D2  // GPIO4
+#define SENSOR_14   D1  // GPIO5
+#define SENSOR_0    D0  // GPIO16
+
+
 Debounce sensor_100(SENSOR_100);
-Debounce sensor_75(SENSOR_75);
-Debounce sensor_50(SENSOR_50);
-Debounce sensor_25(SENSOR_25);
+Debounce sensor_85(SENSOR_85);
+Debounce sensor_71(SENSOR_71);
+Debounce sensor_57(SENSOR_57);
+Debounce sensor_42(SENSOR_42);
+Debounce sensor_28(SENSOR_28);
+Debounce sensor_14(SENSOR_14);
 Debounce sensor_0(SENSOR_0);
 
+#define POWER_PIN D8
 #define LED_PIN 2
 #define BUTTON_PIN 0
 Debounce button(BUTTON_PIN);
@@ -33,6 +42,10 @@ char current_water_level = 0;
 
 //flag for saving data
 bool shouldSaveConfig = false;
+
+unsigned long lastTime = 0; 
+const long interval = 2000;  // 2 segundos
+
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
@@ -59,11 +72,16 @@ void setup() {
   WiFi.mode(WIFI_STA); 
   
   pinMode(LED_PIN, OUTPUT);
+  pinMode(POWER_PIN, OUTPUT);
+  
   pinMode(BUTTON_PIN, INPUT);
   pinMode(SENSOR_100, INPUT);
-  pinMode(SENSOR_75, INPUT);
-  pinMode(SENSOR_50, INPUT);
-  pinMode(SENSOR_25, INPUT);
+  pinMode(SENSOR_85, INPUT);
+  pinMode(SENSOR_71, INPUT);
+  pinMode(SENSOR_57, INPUT);
+  pinMode(SENSOR_42, INPUT);
+  pinMode(SENSOR_28, INPUT);
+  pinMode(SENSOR_14, INPUT);
   pinMode(SENSOR_0, INPUT);
 
   Serial.begin(SERIAL_BAUDRATE);
@@ -109,20 +127,31 @@ void setup() {
 
 }
 
-void read_water_level(){
-  if (sensor100.read() == HIGH){
-    last_water_level = 100;  
-  }else if (sensor75.read() == HIGH){
-    last_water_level = 75;
-  }else if (sensor50.read() == HIGH){
-    last_water_level = 50;
-  }else if (sensor25.read() == HIGH){
-    last_water_level = 25;
-  }else if (sensor0.read() == HIGH){
-    last_water_level = 0;
-  }else{
-    last_water_level = 0 ;
+int read_water_level() {
+  int value = 0;
+  digitalWrite(POWER_PIN, HIGH );
+  delay(50);
+  if (sensor_100.read() == HIGH) {
+    value = 100;
+  } else if (sensor_85.read() == HIGH) {
+    value = 85;
+  } else if (sensor_71.read() == HIGH) {
+    value = 71;
+  } else if (sensor_57.read() == HIGH) {
+    value = 57;
+  } else if (sensor_42.read() == HIGH) {
+    value = 42;
+  } else if (sensor_28.read() == HIGH) {
+    value = 28;
+  } else if (sensor_14.read() == HIGH) {
+    value = 14;
+  } else if (sensor_0.read() == HIGH) {
+    value = 0;
+  } else {
+    value = 0;
   }
+  digitalWrite(POWER_PIN, LOW);
+  return value;
 }
 
 void loop() {
@@ -135,12 +164,15 @@ void loop() {
     delay(500);
     ESP.reset();
   }
+
+  if (millis() - lastTime >= interval) {
+    lastTime = millis();
   
-  current_water_level = read_water_level();
-  if (current_water_level != last_water_level){
-      fauxmo.setState(device_custom_name, true, current_water_level);  
-  }
-  last_water_level = current_water_level;
-  
-  delay(2000);
+    current_water_level = read_water_level();
+    if (current_water_level != last_water_level){
+        fauxmo.setState(device_custom_name, true, current_water_level);  
+    }
+    last_water_level = current_water_level;
+  } 
+  yield();  
 }
