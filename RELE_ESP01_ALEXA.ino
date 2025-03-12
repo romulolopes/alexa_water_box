@@ -14,11 +14,11 @@
 #define SENSOR_50  5                     
 #define SENSOR_25  4                     
 #define SENSOR_0  3                     
-Debounce sensor_100(BUTTON_PIN);
-Debounce sensor_75(BUTTON_PIN);
-Debounce sensor_50(BUTTON_PIN);
-Debounce sensor_25(BUTTON_PIN);
-Debounce sensor_0(BUTTON_PIN);
+Debounce sensor_100(SENSOR_100);
+Debounce sensor_75(SENSOR_75);
+Debounce sensor_50(SENSOR_50);
+Debounce sensor_25(SENSOR_25);
+Debounce sensor_0(SENSOR_0);
 
 #define LED_PIN 2
 #define BUTTON_PIN 0
@@ -136,7 +136,7 @@ void loop() {
     ESP.reset();
   }
   
-  current_water_level = read_water_level()
+  current_water_level = read_water_level();
   if (current_water_level != last_water_level){
       fauxmo.setState(device_custom_name, true, current_water_level);  
   }
