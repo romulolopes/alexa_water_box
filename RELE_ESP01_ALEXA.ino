@@ -9,14 +9,14 @@
 #define SERIAL_BAUDRATE 115200
 #define BOT_TOKEN_LENGTH 30
 
-#define SENSOR_100  D7  // GPIO13
-#define SENSOR_85   D6  // GPIO12
-#define SENSOR_71   D5  // GPIO14
-#define SENSOR_57   D4  // GPIO2
-#define SENSOR_42   D3  // GPIO0
-#define SENSOR_28   D2  // GPIO4
-#define SENSOR_14   D1  // GPIO5
-#define SENSOR_0    D0  // GPIO16
+#define SENSOR_100  13  // GPIO13
+#define SENSOR_85   12  // GPIO12
+#define SENSOR_71   14  // GPIO14
+#define SENSOR_57   2  // GPIO2
+#define SENSOR_42   15  // D8
+#define SENSOR_28   4  // GPIO4
+#define SENSOR_14   5  // GPIO5
+#define SENSOR_0    3  // rx
 
 
 Debounce sensor_100(SENSOR_100);
@@ -28,8 +28,7 @@ Debounce sensor_28(SENSOR_28);
 Debounce sensor_14(SENSOR_14);
 Debounce sensor_0(SENSOR_0);
 
-#define POWER_PIN D8
-#define LED_PIN 2
+#define POWER_PIN 0 //d3
 #define BUTTON_PIN 0
 Debounce button(BUTTON_PIN);
 
@@ -44,7 +43,7 @@ char current_water_level = 0;
 bool shouldSaveConfig = false;
 
 unsigned long lastTime = 0; 
-const long interval = 2000;  // 2 segundos
+const long interval = 30000;  // 2 segundos
 
 
 //callback notifying us of the need to save config
@@ -71,10 +70,9 @@ void writeBotTokenToEeprom() {
 void setup() {
   WiFi.mode(WIFI_STA); 
   
-  pinMode(LED_PIN, OUTPUT);
   pinMode(POWER_PIN, OUTPUT);
   
-  pinMode(BUTTON_PIN, INPUT);
+  //pinMode(BUTTON_PIN, INPUT);
   pinMode(SENSOR_100, INPUT);
   pinMode(SENSOR_85, INPUT);
   pinMode(SENSOR_71, INPUT);
@@ -99,11 +97,10 @@ void setup() {
   WiFiManagerParameter custom_bot_id("NOME", "device_custom_name", device_custom_name , 30);
   
   wm.addParameter(&custom_bot_id);
-  wm.addParameter(&default_output_state);
-
+  
   Serial.println("Criando wifi");
   wm.setTimeout(180); // 180 segundos (3 min) para conectar ao Wi-Fi
-  if (!wm.autoConnect("brisa-3085232")) {
+  if (!wm.autoConnect("Caixa dagua")) {
     Serial.println("Falha ao conectar Wi-Fi! Reiniciando...");
     delay(3000);
     ESP.restart();
@@ -125,10 +122,6 @@ void setup() {
   fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state, unsigned char value) {
 
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name, state ? "ON" : "OFF", value);
-
-    if (strcmp(device_name, device_custom_name) == 0) {
-      digitalWrite(LED_PIN, state ? HIGH : LOW);
-    }
   });
 
 }
