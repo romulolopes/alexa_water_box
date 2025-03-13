@@ -28,7 +28,6 @@ Debounce sensor_28(SENSOR_28);
 Debounce sensor_14(SENSOR_14);
 Debounce sensor_0(SENSOR_0);
 
-#define POWER_PIN 0 //d3
 #define BUTTON_PIN 0
 Debounce button(BUTTON_PIN);
 
@@ -43,7 +42,7 @@ char current_water_level = 0;
 bool shouldSaveConfig = false;
 
 unsigned long lastTime = 0; 
-const long interval = 30000;  // 2 segundos
+const long interval = 1000;  // 2 segundos
 
 
 //callback notifying us of the need to save config
@@ -68,9 +67,6 @@ void writeBotTokenToEeprom() {
 }
 
 void setup() {
-  pinMode(POWER_PIN, OUTPUT);
-  digitalWrite(POWER_PIN, HIGH);  // Evita problemas no boot
-  
   
   WiFi.mode(WIFI_STA); 
   
@@ -130,8 +126,6 @@ void setup() {
 
 int read_water_level() {
   int value = 0;
-  digitalWrite(POWER_PIN, HIGH );
-  delay(50);
   if (sensor_100.read() == HIGH) {
     value = 100;
   } else if (sensor_85.read() == HIGH) {
@@ -151,7 +145,6 @@ int read_water_level() {
   } else {
     value = 0;
   }
-  digitalWrite(POWER_PIN, LOW);
   return value;
 }
 
