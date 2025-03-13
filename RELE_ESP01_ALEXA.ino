@@ -68,11 +68,13 @@ void writeBotTokenToEeprom() {
 }
 
 void setup() {
+  pinMode(POWER_PIN, OUTPUT);
+  digitalWrite(POWER_PIN, HIGH);  // Evita problemas no boot
+  
+  
   WiFi.mode(WIFI_STA); 
   
-  pinMode(POWER_PIN, OUTPUT);
-  
-  //pinMode(BUTTON_PIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT);
   pinMode(SENSOR_100, INPUT);
   pinMode(SENSOR_85, INPUT);
   pinMode(SENSOR_71, INPUT);
