@@ -18,16 +18,6 @@
 #define SENSOR_14   5  // GPIO5
 #define SENSOR_0    3  // rx
 
-
-Debounce sensor_100(SENSOR_100);
-Debounce sensor_85(SENSOR_85);
-Debounce sensor_71(SENSOR_71);
-Debounce sensor_57(SENSOR_57);
-Debounce sensor_42(SENSOR_42);
-Debounce sensor_28(SENSOR_28);
-Debounce sensor_14(SENSOR_14);
-Debounce sensor_0(SENSOR_0);
-
 #define BUTTON_PIN 0
 Debounce button(BUTTON_PIN);
 
@@ -40,10 +30,6 @@ char current_water_level = 0;
 
 //flag for saving data
 bool shouldSaveConfig = false;
-
-unsigned long lastTime = 0; 
-const long interval = 1000;  // 2 segundos
-
 
 //callback notifying us of the need to save config
 void saveConfigCallback () {
@@ -125,27 +111,15 @@ void setup() {
 }
 
 int read_water_level() {
-  int value = 0;
-  if (sensor_100.read() == HIGH) {
-    value = 100;
-  } else if (sensor_85.read() == HIGH) {
-    value = 85;
-  } else if (sensor_71.read() == HIGH) {
-    value = 71;
-  } else if (sensor_57.read() == HIGH) {
-    value = 57;
-  } else if (sensor_42.read() == HIGH) {
-    value = 42;
-  } else if (sensor_28.read() == HIGH) {
-    value = 28;
-  } else if (sensor_14.read() == HIGH) {
-    value = 14;
-  } else if (sensor_0.read() == HIGH) {
-    value = 0;
-  } else {
-    value = 0;
-  }
-  return value;
+    if (digitalRead(SENSOR_100) == HIGH) return 100;
+    if (digitalRead(SENSOR_85) == HIGH) return 85;
+    if (digitalRead(SENSOR_71) == HIGH) return 65;
+    //if (digitalRead(SENSOR_57) == HIGH) return 57;
+    if (digitalRead(SENSOR_42) == HIGH) return 50;
+    if (digitalRead(SENSOR_28) == HIGH) return 30;
+    if (digitalRead(SENSOR_14) == HIGH) return 15;
+    if (digitalRead(SENSOR_0) == HIGH) return 2;
+    return 0;
 }
 
 void loop() {
@@ -159,14 +133,24 @@ void loop() {
     ESP.restart();
   }
 
-  if (millis() - lastTime >= interval) {
+  static unsigned long lastTime = millis();
+  if (millis() - lastTime >= 1000) {
     lastTime = millis();
   
     current_water_level = read_water_level();
+    Serial.printf("Current water level %i\n", (int)current_water_level);
     if (current_water_level != last_water_level){
-        fauxmo.setState(device_custom_name, true, current_water_level);  
+      uint8_t adjusted_value = map(current_water_level, 0, 100, 0, 255);
+      fauxmo.setState(device_custom_name, true, adjusted_value);  
     }
     last_water_level = current_water_level;
   } 
-  yield();  
+
+
+   static unsigned long last = millis();
+   if (millis() - last > 5000) {
+        last = millis();
+        Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
+    }
+
 }
