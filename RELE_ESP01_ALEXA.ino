@@ -111,15 +111,15 @@ void setup() {
 }
 
 int read_water_level() {
-    if (digitalRead(SENSOR_100) == HIGH) return 100;
+    if (digitalRead(SENSOR_100) == HIGH) return 99;
     if (digitalRead(SENSOR_85) == HIGH) return 85;
     if (digitalRead(SENSOR_71) == HIGH) return 65;
     //if (digitalRead(SENSOR_57) == HIGH) return 57;
     if (digitalRead(SENSOR_42) == HIGH) return 50;
     if (digitalRead(SENSOR_28) == HIGH) return 30;
     if (digitalRead(SENSOR_14) == HIGH) return 15;
-    if (digitalRead(SENSOR_0) == HIGH) return 2;
-    return 0;
+    if (digitalRead(SENSOR_0) == HIGH) return 5;
+    return 1;
 }
 
 void loop() {
@@ -134,15 +134,15 @@ void loop() {
   }
 
   static unsigned long lastTime = millis();
-  if (millis() - lastTime >= 1000) {
+  if (millis() - lastTime >= 5000) {
     lastTime = millis();
   
     current_water_level = read_water_level();
     Serial.printf("Current water level %i\n", (int)current_water_level);
-    if (current_water_level != last_water_level){
+    //if (current_water_level != last_water_level){
       uint8_t adjusted_value = map(current_water_level, 0, 100, 0, 255);
       fauxmo.setState(device_custom_name, true, adjusted_value);  
-    }
+    //}
     last_water_level = current_water_level;
   } 
 
